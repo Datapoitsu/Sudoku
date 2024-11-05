@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<head>
+    <title>Sudoku</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Sudoku</h1>
+    <p>Created By: Aarni Junkkala</p>
+    <div class="game"></div>
+    <br>
+    <div class="settings">
+        <button onclick="generateNewBoard()">New Board</button>
+        <button onclick="reset()">Reset</button>
+    </div>
+</body>
+
+
+
+
+
+<script src="sudoku.js"></script>
+<script>
+    function addEvent(element, eventName, callback)
+    {
+        if (element.addEventListener)
+        {
+            element.addEventListener(eventName, callback, false);
+        } else if (element.attachEvent)
+        {
+            element.attachEvent("on" + eventName, callback);
+        } else
+        {
+            element["on" + eventName] = callback;
+        }
+    }
+
+    addEvent(document, "keyup", function (e) {
+        e = e || window.event;
+        check();
+    });
+
+    function generateNewBoard()
+    {
+        for(var i = 0; i < Math.pow(3,4); i++){
+            document.getElementById(i.toString()).disabled = false;
+            document.getElementById(i.toString()).value = null;
+        }
+        newBoard();
+    }
+
+    function reset(){
+        console.log("Resetting!");
+        for(var i = 0; i < Math.pow(3,4); i++){
+            if(document.getElementById(i.toString()).disabled == false){
+                document.getElementById(i.toString()).value = null;
+            }
+        }
+    }
+
+    function check(){
+        console.log("Checking...");
+        var arr = [];
+        for(var i = 0; i < Math.pow(3,4); i++)
+        {
+            if(document.getElementById(i.toString()).value == null){
+                return;
+            }
+            arr.push(document.getElementById(i.toString()).value);
+        }
+        if(CheckSudoku(arr))
+        {
+            console.log("You Won!");
+            for(var i = 0; i < Math.pow(3,4); i++)
+            {
+                var element = document.getElementById(i.toString())
+                element.disabled = true;
+                element.style.backgroundColor = "#99ff99";
+            }
+        }
+    }
+
+    var cellIndex = 0;
+    for(var k = 0; k < 9; k++){
+        const row = document.createElement("div");
+        row.className = "row";
+        for(var i = 0; i < 9; i++){
+            const inputElement = document.createElement("input");
+            inputElement.class = "cell";
+            inputElement.id = cellIndex;
+            inputElement.type = "text";
+            inputElement.maxLength = 1;
+
+            if(i < 3 || i > 5)
+            {
+                if(k < 3 || k > 5)
+                {
+                    inputElement.style.backgroundColor = "#d6d6d6";
+                }
+            }
+            else{
+                if(k > 2 && k < 6){
+                    inputElement.style.backgroundColor = "#d6d6d6";
+                }
+            }
+            
+            row.append(inputElement);
+            cellIndex++;
+        }
+        document.getElementsByClassName("game").item(0).appendChild(row);
+    }
+    newBoard();
+</script>
