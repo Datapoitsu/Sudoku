@@ -43,7 +43,7 @@ function shuffleBoard(table){
     }
 
     //Repeatable acts
-    for(var i = 0; i < 25; i++)
+    for(var i = 0; i < 500; i++)
     {
         rand = Math.round(Math.random() * 5);
         switch(rand){

@@ -80,35 +80,41 @@
         }
     }
 
-    var cellIndex = 0;
-    for(var k = 0; k < 9; k++){
-        const row = document.createElement("div");
-        row.className = "row";
-        for(var i = 0; i < 9; i++){
-            const inputElement = document.createElement("input");
-            inputElement.class = "cell";
-            inputElement.id = cellIndex;
-            inputElement.type = "text";
-            inputElement.maxLength = 1;
+    function start()
+    {
+        var cellIndex = 0;
+        for(var k = 0; k < 9; k++){
+            const row = document.createElement("div");
+            row.className = "row";
+            for(var i = 0; i < 9; i++){
+                const inputElement = document.createElement("input");
+                inputElement.class = "cell";
+                inputElement.id = cellIndex;
+                inputElement.type = "text";
+                inputElement.maxLength = 1;
 
-            inputElement.style.backgroundColor = "#ffffff";
-            if(i < 3 || i > 5)
-            {
-                if(k < 3 || k > 5)
+                inputElement.style.backgroundColor = "#ffffff";
+                inputElement.style.color = "#000000";
+                if(i < 3 || i > 5)
                 {
-                    inputElement.style.backgroundColor = "#d6d6d6";
+                    if(k < 3 || k > 5)
+                    {
+                        inputElement.style.backgroundColor = "#d6d6d6";
+                    }
                 }
-            }
-            else{
-                if(k > 2 && k < 6){
-                    inputElement.style.backgroundColor = "#d6d6d6";
+                else{
+                    if(k > 2 && k < 6){
+                        inputElement.style.backgroundColor = "#d6d6d6";
+                    }
                 }
+                
+                row.append(inputElement);
+                cellIndex++;
             }
-            
-            row.append(inputElement);
-            cellIndex++;
+            document.getElementsByClassName("game").item(0).appendChild(row);
         }
-        document.getElementsByClassName("game").item(0).appendChild(row);
+        generateNewBoard(40,"Normal");
     }
-    generateNewBoard(40,"Normal");
+    
+    start();
 </script>
