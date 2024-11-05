@@ -1,22 +1,41 @@
+body{
+    background-color:#dbdbdb;
+}
+
+.easy{
+    color: green;
+}
+
+.normal{
+    color: #a3a243;
+}
+
+.hard{
+    color: red;
+}
+
 .game {
     display: flexbox;
     margin: auto;
     width: 500px;
+    text-align: center;
 }
 
 .settings{
     display: flexbox;
     margin: auto;
     width: 500px;
+    text-align: center;
 }
 
 button{
-    width: 100px;
+    width: 91px;
     height: 60px;
     display: inline-block;
     text-align: center;
     vertical-align: middle;
     margin-top: 0;
+    background-color: #dbdbdb;
 }
 
 .cell {

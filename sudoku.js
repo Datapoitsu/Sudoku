@@ -1,4 +1,7 @@
-function newBoard()
+// -------------------- Sudoku -------------------- //
+//Written by: Aarni Junkkala
+
+function newBoard(count)
 {
     var numbers = 
     [
@@ -14,72 +17,115 @@ function newBoard()
         6,4,5,9,7,8,3,1,2,
         9,7,8,3,1,2,6,4,5,
     ];
-    //Random acts to a solved board to shuffle it
-    for(var i = 0; i < 25; i++)
-    {
-        var rand = Math.round(Math.random() * 11);
-        switch(rand){
-            case 0:
-                numbers = RotateClockWise(numbers);
-                break;
-            case 1:
-                numbers = RotateCounterClockWise(numbers);
-                break;
-            case 2:
-                numbers = FlipHorizontal(numbers);
-                break;
-            case 3:
-                numbers = FlipVertical(numbers);
-                break;
-            case 4:
-                numbers = FlipDiagonal(numbers);
-                break;
-            case 5:
-                numbers = FlipDiagonal2(numbers);
-                break;
-            case 6:
-                randomNumber1 = Math.round(Math.random() * 8) + 1;
-                randomNumber2 = Math.round(Math.random() * 8) + 1;
-                SwapNumbers(numbers,randomNumber1,randomNumber2);
-            case 7:
-                randomNumber1 = Math.round(Math.random() * 2);
-                randomNumber2 = Math.round(Math.random() * 2);
-                randomNumber3 = Math.round(Math.random() * 2);
-                SwapRows(numbers,randomNumber1 + 3 * randomNumber3,randomNumber2 + 3 * randomNumber3);
-            case 8:
-                randomNumber1 = Math.round(Math.random() * 2);
-                randomNumber2 = Math.round(Math.random() * 2);
-                SwapBands(numbers,randomNumber1,randomNumber2);
-            case 9:
-                randomNumber1 = Math.round(Math.random() * 2);
-                randomNumber2 = Math.round(Math.random() * 2);
-                randomNumber3 = Math.round(Math.random() * 2);
-                SwapColumns(numbers,randomNumber1 + 3 * randomNumber3,randomNumber2 + 3 * randomNumber3);
-
-            case 10:
-                randomNumber1 = Math.round(Math.random() * 2);
-                randomNumber2 = Math.round(Math.random() * 2);
-                SwapStacks(numbers,randomNumber1,randomNumber2);
-            case 11:
-                break;
-        }
-    }
-
-    //Removing numbers
-    var emptyCount = 45;
-    for(var i = 0; i < emptyCount; i++)
-    {
-        var index = Math.round(Math.random() * 80);
-        while(numbers[index] == 0){
-            index = Math.round(Math.random() * 80);
-        }
-        numbers[index] = 0;
-    }
-
+    shuffleBoard(numbers);
+    removeNumbers(numbers,81-count);
     setNumbers(numbers);
 }
 
-function setNumbers(table){
+function shuffleBoard(table){
+    //Random acts to a solved board to shuffle it
+
+    //Acts that don't make sense to repeat many times
+    var rand = Math.round(Math.random() * 3)
+    for(var i = 0; i < rand; i++)
+    {
+        table = RotateClockWise(table);
+    }
+    rand = Math.round(Math.random() * 1)
+    if(rand == 0)
+    {
+        table = FlipDiagonal(table);
+    }
+    rand = Math.round(Math.random() * 1)
+    if(rand == 0)
+    {
+        table = FlipDiagonal2(table);
+    }
+
+    //Repeatable acts
+    for(var i = 0; i < 25; i++)
+    {
+        rand = Math.round(Math.random() * 5);
+        switch(rand){
+            case 0:
+                randomNumber1 = Math.round(Math.random() * 8) + 1;
+                randomNumber2 = Math.round(Math.random() * 8) + 1;
+                SwapNumbers(table,randomNumber1,randomNumber2);
+            case 1:
+                randomNumber1 = Math.round(Math.random() * 2);
+                randomNumber2 = Math.round(Math.random() * 2);
+                randomNumber3 = Math.round(Math.random() * 2);
+                SwapRows(table,randomNumber1 + 3 * randomNumber3,randomNumber2 + 3 * randomNumber3);
+            case 2:
+                randomNumber1 = Math.round(Math.random() * 2);
+                randomNumber2 = Math.round(Math.random() * 2);
+                SwapBands(table,randomNumber1,randomNumber2);
+            case 3:
+                randomNumber1 = Math.round(Math.random() * 2);
+                randomNumber2 = Math.round(Math.random() * 2);
+                randomNumber3 = Math.round(Math.random() * 2);
+                SwapColumns(table,randomNumber1 + 3 * randomNumber3,randomNumber2 + 3 * randomNumber3);
+            case 4:
+                randomNumber1 = Math.round(Math.random() * 2);
+                randomNumber2 = Math.round(Math.random() * 2);
+                SwapStacks(table,randomNumber1,randomNumber2);
+            case 5:
+                break;
+        }
+    }
+}
+
+function canBeRemoved(uniqueArr,number)
+{
+    if(number <= 0 || number > uniqueArr.length)
+    {
+        return false;
+    }
+
+    var isZero = false;
+    for(var i = 0; i < uniqueArr.length; i++)
+    {
+        if(uniqueArr[i] == 0)
+        {
+            isZero = true;
+            break;
+        }
+    }
+
+    if(uniqueArr[number - 1] == 1 && isZero == true)
+    {
+        return false;
+    }
+    return true;
+}
+
+function removeNumbers(table,count)
+{
+    var size = Math.sqrt(Math.sqrt(table.length));
+    //Limits the count so there will always be one of each number except a random one.
+    if(count > table.length - size*size + 1)
+    {
+        count = table.length - size*size + 1;
+    }
+    var uniqueArr = Array(Math.sqrt(table.length)).fill(0);
+    for(var i = 0; i < table.length; i++)
+    {
+        uniqueArr[table[i] - 1] += 1;
+    }
+    var index = Math.floor(Math.random() * table.length);
+    for(var i = 0; i < count; i++)
+    {
+        while(!canBeRemoved(uniqueArr,table[index]))
+        {
+            index = Math.floor(Math.random() * table.length);
+        }
+        uniqueArr[table[index] - 1] -= 1;
+        table[index] = 0;
+    }
+}
+
+function setNumbers(table)
+{
     //Putting numbers into the board
     for(var i = 0; i < table.length; i++){
         if(table[i] != 0)
@@ -240,16 +286,17 @@ function SwapStacks(table, stack1, stack2)
 function CheckSudoku(table)
 {
     var size = Math.sqrt(Math.sqrt(table.length));
+    
+    //Check rows.
     for(var row = 0; row < Math.pow(size,2); row++)
     {
-        console.log("Checking row " + row);
-        if(checkNumbers(table.slice(row*9,(row+1)*9)) == false)
+        if(checkNumbers(table.slice(row*9,(row+1)*9),size) == false)
         {
-            console.log("Failed at row " + row)
             return false;
         }
     }
     
+    //Check columns.
     for(var column = 0; column < Math.pow(size,2); column++)
     {
         var arr = [];
@@ -257,14 +304,13 @@ function CheckSudoku(table)
         {
             arr.push(table[i*9 + column]);
         }
-        console.log("Checking column " + column);
-        if(checkNumbers(arr) == false)
+        if(checkNumbers(arr,size) == false)
         {
-            console.log("Failed at column " + column)
             return false;
         }
     }
 
+    //Check squares.
     for(var i = 0; i < size; i++)
     {
         for(var k = 0; k < size; k++)
@@ -276,9 +322,7 @@ function CheckSudoku(table)
                     arr.push(table[index + j + l * Math.pow(size,2)]);
                 }               
             }
-            console.log("Checking cube at index " + index)
-            if(checkNumbers(arr) == false){
-                console.log("Failed cube at index " + index)
+            if(checkNumbers(arr,size) == false){
                 return false;
             }
         }
@@ -286,23 +330,22 @@ function CheckSudoku(table)
     return true;
 }
 
-function checkNumbers(numbers)
+function checkNumbers(numbers,size)
 {
-
-    console.log("Numbers before: " + numbers);
-    if(numbers.length != 9)
+    if(numbers.length != size*size)
     {
-        console.log("Too few numbers");
         return false;
     }
     numbers.sort();
-    console.log("Numbers sorted: " + numbers);
-    correctArray = [1,2,3,4,5,6,7,8,9];
+    correctArray = [];
+    for(var i = 0; i < numbers.length; i++)
+    {
+        correctArray.push(i+1);
+    }
     for(var i = 0; i < numbers.length; i++)
     {
         if(numbers[i] != correctArray[i])
         {
-            console.log("Numbers aren't correct");
             return false;
         }
     }
