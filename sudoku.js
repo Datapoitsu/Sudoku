@@ -290,7 +290,7 @@ function CheckSudoku(table)
     //Check rows.
     for(var row = 0; row < Math.pow(size,2); row++)
     {
-        if(checkNumbers(table.slice(row*9,(row+1)*9),size) == false)
+        if(checkNumbers(table.slice(row*Math.pow(size,2),(row+1)*Math.pow(size)),size) == false)
         {
             return false;
         }
@@ -302,7 +302,7 @@ function CheckSudoku(table)
         var arr = [];
         for(var i = 0; i < Math.pow(size,2); i++)
         {
-            arr.push(table[i*9 + column]);
+            arr.push(table[i*Math.pow(size,2) + column]);
         }
         if(checkNumbers(arr,size) == false)
         {
