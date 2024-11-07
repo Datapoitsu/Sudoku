@@ -13,10 +13,15 @@
     <div class="game"></div>
     <br>
     <div class="settings">
-        <button onclick="generateNewBoard(50,'Easy')" class="easy">Easy</button>
-        <button onclick="generateNewBoard(40,'Normal')" class="normal">Normal</button>
-        <button onclick="generateNewBoard(30,'Hard')" class="hard">Hard</button>
+        <button onclick="generateNewBoard(0.3,'Easy')" class="easy">Easy</button>
+        <button onclick="generateNewBoard(0.5,'Normal')" class="normal">Normal</button>
+        <button onclick="generateNewBoard(0.7,'Hard')" class="hard">Hard</button>
         <button onclick="reset()">Reset</button>
+    </div>
+    <br>
+    <div class="settings">
+        <input type="text" id="width" placeholder="Width">
+        <input type="text" id="height" placeholder="Height">
     </div>
 </body>
 
@@ -41,14 +46,25 @@
         check();
     });
 
-    function generateNewBoard(count,difficultyName)
+    function generateNewBoard(disapperanceRate,difficultyName)
     {
+        //New board
+        var width = document.getElementById("width").value;
+        var height = document.getElementById("height").value;
+        if(width == '' || width < 2){
+            width = 3;
+        }
+        if(height == '' || height < 2){
+            height = 3;
+        }
+        newDOMBoard(width,height);
+
         document.getElementById("difficultyText").innerHTML = difficultyName;
-        for(var i = 0; i < Math.pow(3,4); i++){
+        for(var i = 0; i < Math.pow(width * height,2); i++){
             document.getElementById(i.toString()).disabled = false;
             document.getElementById(i.toString()).value = null;
         }
-        newBoard(count);
+        newBoard(width,height,disapperanceRate);
     }
 
     function reset(){
@@ -59,9 +75,9 @@
         }
     }
 
-    function check(){
+    function check(width,height){
         var arr = [];
-        for(var i = 0; i < Math.pow(3,4); i++)
+        for(var i = 0; i < Math.pow(width*height,2); i++)
         {
             if(document.getElementById(i.toString()).value == null){
                 return;
@@ -71,7 +87,7 @@
         if(CheckSudoku(arr))
         {
             console.log("You Won!");
-            for(var i = 0; i < Math.pow(3,4); i++)
+            for(var i = 0; i < Math.pow(width*height,2); i++)
             {
                 var element = document.getElementById(i.toString())
                 element.disabled = true;
@@ -80,42 +96,39 @@
         }
     }
 
-    function start()
+    function newDOMBoard(width,height)
     {
+        var game = document.getElementsByClassName("game");
+        console.log("")
+        game.innerHTML = "";
         var cellIndex = 0;
-        for(var k = 0; k < 9; k++){
-            const row = document.createElement("div");
-            row.className = "row";
-            for(var i = 0; i < 9; i++)
+        for(var row = 0; row < width * height; row++){
+            const rowElement = document.createElement("div");
+            rowElement.className = "row";
+            for(var column = 0; column < width * height; column++)
             {
                 const inputElement = document.createElement("input");
-                inputElement.class = "cell";
+                inputElement.className = "cell";
                 inputElement.id = cellIndex;
                 inputElement.type = "text";
                 inputElement.maxLength = 1;
 
                 inputElement.style.backgroundColor = "#ffffff";
                 inputElement.style.color = "#000000";
-                if(i < 3 || i > 5)
+                /*if((column < 3 || column > 5) && (row < 3 || row > 5) || (column > 2 && column < 6 && row > 2 && row < 6))
                 {
-                    if(k < 3 || k > 5)
-                    {
-                        inputElement.style.backgroundColor = "#d6d6d6";
-                    }
-                }
-                else{
-                    if(k > 2 && k < 6){
-                        inputElement.style.backgroundColor = "#d6d6d6";
-                    }
+                    
+                }*/
+                if(column % 2 == 0 && row % 2 == 0 || column % 2 != 0 && row % 2 != 0){
+                    inputElement.style.backgroundColor = "#d6d6d6";
                 }
                 
-                row.append(inputElement);
+                rowElement.append(inputElement);
                 cellIndex++;
             }
-            document.getElementsByClassName("game").item(0).appendChild(row);
+            document.getElementsByClassName("game").item(0).appendChild(rowElement);
         }
-        generateNewBoard(40,"Normal");
     }
     
-    start();
+    generateNewBoard(0.5,'Normal');
 </script>

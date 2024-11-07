@@ -1,24 +1,60 @@
 // -------------------- Sudoku -------------------- //
 //Written by: Aarni Junkkala
 
-function newBoard(count)
+function newBoard(width, height, dissappearanceRate)
 {
-    var numbers = 
-    [
-        1,2,3,4,5,6,7,8,9,
-        4,5,6,7,8,9,1,2,3,
-        7,8,9,1,2,3,4,5,6,
-        
-        2,3,1,5,6,4,8,9,7,
-        5,6,4,8,9,7,2,3,1,
-        8,9,7,2,3,1,5,6,4,
+    var numbers = [];
+    holder = [];
+    //console.log("Width",width,"Height",height);
+    for(var i = 0; i < width * height; i++)
+    {
+        holder.push(i + 1);
+    }
+    //console.log("holder: " + holder)
+    //console.log("Numbers: " + numbers);
+    for(var h = 0; h < width * height; h++)
+    {
+        //console.log("Holder at start..." + holder);
+        for(var w = 0; w < holder.length; w++)
+        {
+            numbers.push(holder[w]);
+        }
+        //console.log("Numbers: " + numbers + " Length: " + numbers.length);
 
-        3,1,2,6,4,5,9,7,8,
-        6,4,5,9,7,8,3,1,2,
-        9,7,8,3,1,2,6,4,5,
-    ];
-    shuffleBoard(numbers);
-    removeNumbers(numbers,81-count);
+        //Shifting numbers within row.
+        var holder2 = holder.slice(0,width);
+        //console.log("Holder2: " + holder2);
+
+        for(var w = 0; w < width; w++)
+        {
+            holder.shift();
+        }
+        //console.log("Cutted holder " + holder);
+        holder = holder.concat(holder2);
+        //console.log("Holder: " + holder);
+        
+        if(h % height == 0)
+        {
+            var holder3 = [];
+            for(var w = 0; w < height; w++)
+            {
+                holder3 = holder.slice(w*width,(w+1)*width);
+                holder4 = holder3[0];
+                holder3.shift();
+                holder3.push(holder4);
+                //console.log("Holder here: " + holder);
+                for(var i = 0; i < holder3.length; i++)
+                {
+                    holder[w*width + i] = holder3[i];
+                }
+                //console.log("Holder here too: " + holder);
+            }
+        }
+    }
+
+    //console.log("Numbers ", numbers);
+    //shuffleBoard(numbers);
+    //removeNumbers(numbers,dissappearanceRate);
     setNumbers(numbers);
 }
 
@@ -99,8 +135,9 @@ function canBeRemoved(uniqueArr,number)
     return true;
 }
 
-function removeNumbers(table,count)
+function removeNumbers(table,dissappearanceRate)
 {
+    var count = Math.floor(table.length * dissappearanceRate);
     var size = Math.sqrt(Math.sqrt(table.length));
     //Limits the count so there will always be one of each number except a random one.
     if(count > table.length - size*size + 1)
@@ -127,7 +164,8 @@ function removeNumbers(table,count)
 function setNumbers(table)
 {
     //Putting numbers into the board
-    for(var i = 0; i < table.length; i++){
+    for(var i = 0; i < table.length; i++)
+    {
         if(table[i] != 0)
         {
             document.getElementById(i.toString()).value = table[i];
@@ -354,8 +392,8 @@ function checkNumbers(numbers,size)
 
 function printSudoku(table){
     var size = Math.sqrt(Math.sqrt(table.length));
-    console.log("Printing sudoku");
+    //console.log("Printing sudoku");
     for(var i = 0; i < Math.pow(size,2);i++){
-        console.log(table.slice(i*Math.pow(size,2),(i+1)*Math.pow(size,2)))
+        //console.log(table.slice(i*Math.pow(size,2),(i+1)*Math.pow(size,2)))
     }
 }
