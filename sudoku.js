@@ -1,37 +1,34 @@
 // -------------------- Sudoku -------------------- //
 //Written by: Aarni Junkkala
+var width = 0;
+var height = 0;
 
-function newBoard(width, height, dissappearanceRate)
+
+function newBoard(boardWidth, boardHeight, dissappearanceRate)
 {
+    width = boardWidth
+    height = boardHeight;
     var numbers = [];
     holder = [];
-    //console.log("Width",width,"Height",height);
     for(var i = 0; i < width * height; i++)
     {
         holder.push(i + 1);
     }
-    //console.log("holder: " + holder)
-    //console.log("Numbers: " + numbers);
     for(var h = 0; h < width * height; h++)
     {
-        //console.log("Holder at start..." + holder);
         for(var w = 0; w < holder.length; w++)
         {
             numbers.push(holder[w]);
         }
-        //console.log("Numbers: " + numbers + " Length: " + numbers.length);
 
         //Shifting numbers within row.
         var holder2 = holder.slice(0,width);
-        //console.log("Holder2: " + holder2);
 
         for(var w = 0; w < width; w++)
         {
             holder.shift();
         }
-        //console.log("Cutted holder " + holder);
         holder = holder.concat(holder2);
-        //console.log("Holder: " + holder);
         
         if(h % height == 0)
         {
@@ -42,69 +39,93 @@ function newBoard(width, height, dissappearanceRate)
                 holder4 = holder3[0];
                 holder3.shift();
                 holder3.push(holder4);
-                //console.log("Holder here: " + holder);
                 for(var i = 0; i < holder3.length; i++)
                 {
                     holder[w*width + i] = holder3[i];
                 }
-                //console.log("Holder here too: " + holder);
             }
         }
     }
-
-    //console.log("Numbers ", numbers);
-    //shuffleBoard(numbers);
-    //removeNumbers(numbers,dissappearanceRate);
+    shuffleBoard(numbers);
+    removeNumbers(numbers,dissappearanceRate);
     setNumbers(numbers);
 }
 
 function shuffleBoard(table){
     //Random acts to a solved board to shuffle it
-
     //Acts that don't make sense to repeat many times
-    var rand = Math.round(Math.random() * 3)
-    for(var i = 0; i < rand; i++)
+    let rand = 0;
+    if(width == height) //These moves only work with boards that have same width and height
     {
-        table = RotateClockWise(table);
+        rand = Math.round(Math.random() * 3)
+        for(var i = 0; i < rand; i++)
+        {
+            table = RotateClockWise(table);
+        }
+        rand = Math.round(Math.random() * 1)
+        if(rand == 0)
+        {
+            table = FlipDiagonal(table);
+        }
+        rand = Math.round(Math.random() * 1)
+        if(rand == 0)
+        {
+            table = FlipDiagonal2(table);
+        }
     }
-    rand = Math.round(Math.random() * 1)
-    if(rand == 0)
-    {
-        table = FlipDiagonal(table);
-    }
-    rand = Math.round(Math.random() * 1)
-    if(rand == 0)
-    {
-        table = FlipDiagonal2(table);
-    }
+
+    let randomNumber1, randomNumber2, randomNumber3;
 
     //Repeatable acts
-    for(var i = 0; i < 500; i++)
+    for(var i = 0; i < table.length; i++)
     {
         rand = Math.round(Math.random() * 5);
         switch(rand){
             case 0:
-                randomNumber1 = Math.round(Math.random() * 8) + 1;
-                randomNumber2 = Math.round(Math.random() * 8) + 1;
-                SwapNumbers(table,randomNumber1,randomNumber2);
+                randomNumber1 = Math.round(Math.random() * (Math.sqrt(table.length) - 1)) + 1;
+                randomNumber2 = Math.round(Math.random() * (Math.sqrt(table.length) - 1)) + 1;
+                SwapNumbers(table, randomNumber1, randomNumber2);
+                break;
             case 1:
-                randomNumber1 = Math.round(Math.random() * 2);
-                randomNumber2 = Math.round(Math.random() * 2);
-                randomNumber3 = Math.round(Math.random() * 2);
-                SwapRows(table,randomNumber1 + 3 * randomNumber3,randomNumber2 + 3 * randomNumber3);
+                randomNumber3 = height * Math.round(Math.random() * (width - 1));
+                randomNumber1 = Math.round(Math.random() * (height - 1));
+                randomNumber2 = randomNumber1;
+                while(randomNumber1 == randomNumber2){
+                    randomNumber2 = Math.round(Math.random() * (height - 1));
+                }
+                randomNumber1 += randomNumber3;
+                randomNumber2 += randomNumber3;
+                SwapRows(table, randomNumber1, randomNumber2);
+                break;
             case 2:
-                randomNumber1 = Math.round(Math.random() * 2);
-                randomNumber2 = Math.round(Math.random() * 2);
-                SwapBands(table,randomNumber1,randomNumber2);
+                randomNumber1 = Math.round(Math.random() * (width - 1));
+                randomNumber2 = randomNumber1;
+                while(randomNumber1 == randomNumber2)
+                {
+                    randomNumber2 = Math.round(Math.random() * (width - 1));
+                }
+                SwapBands(table, randomNumber1, randomNumber2);
+                break;
             case 3:
-                randomNumber1 = Math.round(Math.random() * 2);
-                randomNumber2 = Math.round(Math.random() * 2);
-                randomNumber3 = Math.round(Math.random() * 2);
-                SwapColumns(table,randomNumber1 + 3 * randomNumber3,randomNumber2 + 3 * randomNumber3);
+                randomNumber3 = width * Math.round(Math.random() * (height - 1));
+                randomNumber1 = Math.round(Math.random() * (width - 1));
+                randomNumber2 = randomNumber1;
+                while(randomNumber1 == randomNumber2){
+                    randomNumber2 = Math.round(Math.random() * (width - 1));
+                }
+                randomNumber1 += randomNumber3;
+                randomNumber2 += randomNumber3;
+                SwapColumns(table, randomNumber1, randomNumber2);
+                break;
             case 4:
-                randomNumber1 = Math.round(Math.random() * 2);
-                randomNumber2 = Math.round(Math.random() * 2);
-                SwapStacks(table,randomNumber1,randomNumber2);
+                randomNumber1 = Math.round(Math.random() * (height - 1));
+                randomNumber2 = randomNumber1;
+                while(randomNumber1 == randomNumber2)
+                {
+                    randomNumber2 = Math.round(Math.random() * (height - 1));
+                }
+                SwapStacks(table, randomNumber1, randomNumber2);
+                break;
             case 5:
                 break;
         }
@@ -179,9 +200,9 @@ function RotateClockWise(table)
 {
     var size = Math.sqrt(Math.sqrt(table.length));
     var copy = table.slice();
-    for (var i = 0; i < Math.pow(size, 2); i++)
+    for (let i = 0; i < Math.pow(size, 2); i++)
     {
-        for (var k = 0; k < Math.pow(size, 2); k++)
+        for (let k = 0; k < Math.pow(size, 2); k++)
         {
             table[i * Math.pow(size, 2) + k] = copy[(Math.pow(size, 2) - 1 - k) * Math.pow(size, 2) + i];
         }
@@ -279,88 +300,88 @@ function SwapNumbers(table, num1, num2)
 
 function SwapRows(table, row1, row2)
 {
-    var size = Math.sqrt(Math.sqrt(table.length));
-    for (var i = 0; i < Math.pow(size,2); i++)
+    var size = Math.sqrt(table.length);
+    for(let i = 0; i < size; i++)
     {
-        var holder = table[row1 * Math.pow(size,2) + i];
-        table[row1 * Math.pow(size, 2) + i] = table[row2 * Math.pow(size, 2) + i];
-        table[row2 * Math.pow(size, 2) + i] = holder;
+        let holder = table[row1 * size + i];
+        table[row1 * size + i] = table[row2 * size + i];
+        table[row2 * size + i] = holder;
     }
     return table;
 }
 
 function SwapBands(table, band1, band2)
 {
-    var size = Math.sqrt(Math.sqrt(table.length));
-    for (var i = 0; i < size; i++)
+    for (var i = 0; i < height; i++)
     {
-        table = SwapRows(table, band1 * size + i, band2 * size + i);
+        table = SwapRows(table, band1 * height + i, band2 * height + i);
     }
     return table;
 }
 
 function SwapColumns(table, column1, column2)
 {
-    var size = Math.sqrt(Math.sqrt(table.length));
-    for (var i = 0; i < Math.pow(size,2); i++)
+    var size = Math.sqrt(table.length);
+    for(let i = 0; i < size; i++)
     {
-        var holder = table[i * Math.pow(size, 2) + column1];
-        table[i * Math.pow(size, 2) + column1] = table[i * Math.pow(size, 2) + column2];
-        table[i * Math.pow(size, 2) + column2] = holder;
+        let holder = table[column1 + i * size];
+        table[column1 + i * size] = table[column2 + i * size];
+        table[column2 + i * size] = holder;
     }
     return table;
 }
 
 function SwapStacks(table, stack1, stack2)
 {
-    var size = Math.sqrt(Math.sqrt(table.length));
-    for(var i = 0; i < size; i++)
+    for(var i = 0; i < width; i++)
     {
-        table = SwapColumns(table, stack1 * size + i, stack2 * size + i);
+        table = SwapColumns(table, stack1 * width + i, stack2 * width + i);
     }
     return table;
 }
 
-function CheckSudoku(table)
+function CheckSudoku(table) //This function should only be called when all cells have a number
 {
-    var size = Math.sqrt(Math.sqrt(table.length));
-    
+    console.log("Checking rows", width,height);
     //Check rows.
-    for(var row = 0; row < Math.pow(size,2); row++)
+    for(var row = 0; row < width * height; row++)
     {
-        if(checkNumbers(table.slice(row*Math.pow(size,2),(row+1)*Math.pow(size)),size) == false)
+        if(CheckNumbers(table.slice(row * width * height, (row+1) * width * height)) == false)
         {
             return false;
         }
     }
-    
+    console.log("Checking columns");
     //Check columns.
-    for(var column = 0; column < Math.pow(size,2); column++)
+    for(var column = 0; column < width * height; column++)
     {
         var arr = [];
-        for(var i = 0; i < Math.pow(size,2); i++)
+        for(var i = 0; i < width * height; i++)
         {
-            arr.push(table[i*Math.pow(size,2) + column]);
+            arr.push(table[i * width * height + column]);
         }
-        if(checkNumbers(arr,size) == false)
+        if(CheckNumbers(arr) == false)
         {
             return false;
         }
     }
-
+    
+    console.log("checking squares");
     //Check squares.
-    for(var i = 0; i < size; i++)
+    for(var squareH = 0; squareH < width; squareH++)
     {
-        for(var k = 0; k < size; k++)
+        for(var squareW = 0; squareW < height; squareW++)
         {
             var arr = [];
-            index = i * size + k * Math.pow(size,3);
-            for(var j = 0; j < size; j++){
-                for(var l = 0; l < size; l++){
-                    arr.push(table[index + j + l * Math.pow(size,2)]);
-                }               
+            var arr2 = [];
+            //Tunge neliön luvut listaan.
+            for(var w = 0; w < width; w++){
+                for(var h = 0; h < height; h++){
+                    arr.push(table[squareW * width + squareH * (width * width * height) + w + h * (width * height)]);
+                    arr2.push(squareW * width + squareH * (width * width * height) + w + h * (width * height));
+                }
             }
-            if(checkNumbers(arr,size) == false){
+            if(CheckNumbers(arr) == false){
                 return false;
             }
         }
@@ -368,9 +389,9 @@ function CheckSudoku(table)
     return true;
 }
 
-function checkNumbers(numbers,size)
+function CheckNumbers(numbers)
 {
-    if(numbers.length != size*size)
+    if(numbers.length != width * height)
     {
         return false;
     }
@@ -392,8 +413,123 @@ function checkNumbers(numbers,size)
 
 function printSudoku(table){
     var size = Math.sqrt(Math.sqrt(table.length));
-    //console.log("Printing sudoku");
+    console.log("Printing sudoku");
     for(var i = 0; i < Math.pow(size,2);i++){
-        //console.log(table.slice(i*Math.pow(size,2),(i+1)*Math.pow(size,2)))
+        console.log(table.slice(i*Math.pow(size,2),(i+1)*Math.pow(size,2)))
     }
 }
+
+function addEvent(element, eventName, callback)
+{
+    if (element.addEventListener)
+    {
+        element.addEventListener(eventName, callback, false);
+    } else if (element.attachEvent)
+    {
+        element.attachEvent("on" + eventName, callback);
+    } else
+    {
+        element["on" + eventName] = callback;
+    }
+}
+
+addEvent(document, "keyup", function (e) {
+    e = e || window.event;
+    check();
+});
+
+function generateNewBoard(disapperanceRate,difficultyName)
+{
+    //New board
+    var width = document.getElementById("width").value;
+    var height = document.getElementById("height").value;
+    if(width == '' || width < 2){
+        width = 2;
+    }
+    if(height == '' || height < 2){
+        height = 2;
+    }
+    newDOMBoard(width,height);
+
+    document.getElementById("difficultyText").innerHTML = difficultyName;
+    for(var i = 0; i < Math.pow(width * height,2); i++){
+        document.getElementById(i.toString()).disabled = false;
+        document.getElementById(i.toString()).value = null;
+    }
+    newBoard(width,height,disapperanceRate);
+}
+
+function reset()
+{
+    for(let i = 0; i < Math.pow(width*height,2); i++)
+    {
+        if(document.getElementById(i.toString()).disabled == false)
+        {
+            document.getElementById(i.toString()).value = null;
+        }
+    }
+}
+
+function check(){
+    var arr = [];
+    for(var i = 0; i < Math.pow(width * height,2); i++)
+    {
+        if(document.getElementById(i.toString()).value == null)
+        {
+            return;
+        }
+        arr.push(document.getElementById(i.toString()).value);
+    }
+    if(CheckSudoku(arr))
+    {
+        console.log("You Won!");
+        for(var i = 0; i < Math.pow(width*height,2); i++)
+        {
+            var element = document.getElementById(i.toString())
+            element.disabled = true;
+            element.style.backgroundColor = "#5aa15b";
+        }
+    }
+}
+
+function newDOMBoard(width,height)
+{
+    //Removes old board
+    var game = document.getElementsByClassName("game");
+    while(game[0].firstChild != null){
+        game[0].removeChild(game[0].firstChild);
+    }
+
+    for(var row = 0; row < width * height; row++)
+    {
+        const rowElement = document.createElement("div");
+        rowElement.className = "row";
+        for(var column = 0; column < width * height; column++)
+        {
+            const inputElement = document.createElement("input");
+            inputElement.className = "cell";
+            inputElement.id = row * width * height + column;
+            inputElement.type = "text";
+            inputElement.maxLength = 1;
+
+            inputElement.style.backgroundColor = "#ffffff";
+            inputElement.style.color = "#000000";
+
+            if(
+                !(!((column - column % width) % (width * 2) == 0) ||
+                !((row - row % height) % (height * 2) == 0))
+                ||
+                !(((column - column % width) % (width * 2) == 0) ||
+                ((row - row % height) % (height * 2) == 0))
+            )
+            {
+                inputElement.style.backgroundColor = "#d6d6d6";
+            }
+
+            rowElement.append(inputElement);
+        }
+        document.getElementsByClassName("game").item(0).appendChild(rowElement);
+    }
+}
+
+generateNewBoard(0.5,'Normal');
