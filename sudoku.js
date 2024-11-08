@@ -3,133 +3,179 @@
 var width = 0;
 var height = 0;
 
+function getRowIndex(cellIndex)
+{
+    return (cellIndex - (cellIndex % (width * height))) / (width * height);
+}
+
+function getColumnIndex(cellIndex)
+{
+    return cellIndex % (width * height);
+}
+
+function getBandIndex(cellIndex)
+{
+    cellIndex = getRowIndex(cellIndex);
+    cellIndex = (cellIndex - cellIndex % height) / height;
+    return cellIndex;
+}
+
+function getStackIndex(cellIndex)
+{
+    cellIndex = getColumnIndex(cellIndex);
+    cellIndex = (cellIndex - cellIndex % width) / width;
+    return cellIndex;
+} 
+
+function getBlockIndex(cellIndex)
+{
+    return getStackIndex(cellIndex) + getBandIndex(cellIndex) * height;
+}
+
+
+function getRowIndexes(cellIndex)
+{
+    return Array.from({length: width * height}, (_, i) => i + getRowIndex(cellIndex) * width * height);
+}
+
+function getColumnIndexes(cellIndex)
+{
+    return Array.from({length: width * height}, (_, i) => getColumnIndex(cellIndex) + (width * height * i));
+}
+
+function getBlockIndexes(cellIndex)
+{
+    var rootIndex = getStackIndex(cellIndex) * width + getBandIndex(cellIndex) * width * Math.pow(height,2);
+    var arr = [];
+    for(var i = 0; i < height; i++)
+    {
+        for(var j = 0; j < width; j++)
+        {
+            arr.push(rootIndex + j + i * width * height);
+        }
+    }
+    return arr;
+}
+
+function getRow(table,cellIndex)
+{
+    return table.slice(getRowIndex(cellIndex) * width * height, getRowIndex(cellIndex) * width * height + width * height);
+}
+
+function getColumn(table,cellIndex)
+{
+    var arr = [];
+    for(var i = 0; i < width * height; i++)
+    {
+        arr.push(table[getColumnIndex(cellIndex) + (width * height) * i]);
+    }
+    return arr;
+}
+
+function getBlock(table,cellIndex)
+{
+    var arr = [];
+    for(var j = 0; j < height; j++)
+    {
+        for(var i = 0; i < width; i++)
+        {
+            arr.push(table[getBandIndex(cellIndex) * width * Math.pow(height,2) + getStackIndex(cellIndex) * width + i + j * width * height]);
+        }
+    }
+    return arr;
+}
+
+function getPossibleNumbers(table,cellIndex)
+{
+    var rowNumbers = getRow(table,cellIndex);
+    var columnNumbers = getColumn(table,cellIndex);
+    var blockNumbers = getBlock(table,cellIndex);
+    var arr = [];
+    for(var i = 1; i < width * height + 1; i++)
+    {
+        if(!rowNumbers.includes(i) && !columnNumbers.includes(i) && !blockNumbers.includes(i))
+        {
+            arr.push(i);
+        }
+    }
+    return arr;
+}
+
+function unique(table)
+{
+    
+    var holder = [];
+    for(var i = 0; i < table.length; i++)
+    {
+        if(!holder.includes(table[i])){
+            holder.push(table[i]);
+        }
+    }
+    return holder;
+}
+
+function smallestIndex(table)
+{
+    var smallestIndex = 0;
+    var smallestSize = table[0].length;
+    for(var i = 1; i < table.length; i++)
+    {
+        if(table[i].length < smallestSize)
+        {
+            smallestIndex = i;
+            smallestSize = table[i].length;
+        }
+    }
+    return smallestIndex;
+}
+
+function calculateNumbers()
+{
+    let numbers = Array(Math.pow(width * height, 2)).fill(0);
+    let possibleNumbers = [];
+    var nums = [];
+    for(var i = 1; i < width * height + 1; i++)
+    {
+        nums.push(i);
+    }
+
+    for(var i = 0; i < Math.pow(width * height, 2); i++)
+    {
+        possibleNumbers.push(nums.slice());
+    }
+
+    var index = Math.floor(Math.random() * (Math.pow(width * height, 2) - 1));
+    for(var i = 0; i < Math.pow(width * height ,2); i++)
+    {
+        var rand = Math.floor(Math.random() * (possibleNumbers[index].length - 1));
+        numbers[index] = possibleNumbers[index][rand];
+        possibleNumbers[index] = Array(width * height + 1).fill(-1);
+        
+        var arr = unique(getRowIndexes(index).concat(getColumnIndexes(index),getBlockIndexes(index)));
+        for(let j = 0; j < arr.length; j++)
+        {
+            if(possibleNumbers[arr[j]].length < width * height + 1)
+            {
+                possibleNumbers[arr[j]] = getPossibleNumbers(numbers,arr[j]);
+            }
+        }
+        index = smallestIndex(possibleNumbers);
+        if(possibleNumbers[index].length == 0)
+        {
+            return calculateNumbers();
+        }
+    }
+    return numbers;
+}
 
 function newBoard(boardWidth, boardHeight, dissappearanceRate)
 {
     width = boardWidth
     height = boardHeight;
-    var numbers = [];
-    holder = [];
-    for(var i = 0; i < width * height; i++)
-    {
-        holder.push(i + 1);
-    }
-    for(var h = 0; h < width * height; h++)
-    {
-        for(var w = 0; w < holder.length; w++)
-        {
-            numbers.push(holder[w]);
-        }
-
-        //Shifting numbers within row.
-        var holder2 = holder.slice(0,width);
-
-        for(var w = 0; w < width; w++)
-        {
-            holder.shift();
-        }
-        holder = holder.concat(holder2);
-        
-        if(h % height == 0)
-        {
-            var holder3 = [];
-            for(var w = 0; w < height; w++)
-            {
-                holder3 = holder.slice(w*width,(w+1)*width);
-                holder4 = holder3[0];
-                holder3.shift();
-                holder3.push(holder4);
-                for(var i = 0; i < holder3.length; i++)
-                {
-                    holder[w*width + i] = holder3[i];
-                }
-            }
-        }
-    }
-    shuffleBoard(numbers);
+    
+    var numbers = calculateNumbers();
     removeNumbers(numbers,dissappearanceRate);
     setNumbers(numbers);
-}
-
-function shuffleBoard(table){
-    //Random acts to a solved board to shuffle it
-    //Acts that don't make sense to repeat many times
-    let rand = 0;
-    if(width == height) //These moves only work with boards that have same width and height
-    {
-        rand = Math.round(Math.random() * 3)
-        for(var i = 0; i < rand; i++)
-        {
-            table = RotateClockWise(table);
-        }
-        rand = Math.round(Math.random() * 1)
-        if(rand == 0)
-        {
-            table = FlipDiagonal(table);
-        }
-        rand = Math.round(Math.random() * 1)
-        if(rand == 0)
-        {
-            table = FlipDiagonal2(table);
-        }
-    }
-
-    let randomNumber1, randomNumber2, randomNumber3;
-
-    //Repeatable acts
-    for(var i = 0; i < table.length; i++)
-    {
-        rand = Math.round(Math.random() * 5);
-        switch(rand){
-            case 0:
-                randomNumber1 = Math.round(Math.random() * (Math.sqrt(table.length) - 1)) + 1;
-                randomNumber2 = Math.round(Math.random() * (Math.sqrt(table.length) - 1)) + 1;
-                SwapNumbers(table, randomNumber1, randomNumber2);
-                break;
-            case 1:
-                randomNumber3 = height * Math.round(Math.random() * (width - 1));
-                randomNumber1 = Math.round(Math.random() * (height - 1));
-                randomNumber2 = randomNumber1;
-                while(randomNumber1 == randomNumber2){
-                    randomNumber2 = Math.round(Math.random() * (height - 1));
-                }
-                randomNumber1 += randomNumber3;
-                randomNumber2 += randomNumber3;
-                SwapRows(table, randomNumber1, randomNumber2);
-                break;
-            case 2:
-                randomNumber1 = Math.round(Math.random() * (width - 1));
-                randomNumber2 = randomNumber1;
-                while(randomNumber1 == randomNumber2)
-                {
-                    randomNumber2 = Math.round(Math.random() * (width - 1));
-                }
-                SwapBands(table, randomNumber1, randomNumber2);
-                break;
-            case 3:
-                randomNumber3 = width * Math.round(Math.random() * (height - 1));
-                randomNumber1 = Math.round(Math.random() * (width - 1));
-                randomNumber2 = randomNumber1;
-                while(randomNumber1 == randomNumber2){
-                    randomNumber2 = Math.round(Math.random() * (width - 1));
-                }
-                randomNumber1 += randomNumber3;
-                randomNumber2 += randomNumber3;
-                SwapColumns(table, randomNumber1, randomNumber2);
-                break;
-            case 4:
-                randomNumber1 = Math.round(Math.random() * (height - 1));
-                randomNumber2 = randomNumber1;
-                while(randomNumber1 == randomNumber2)
-                {
-                    randomNumber2 = Math.round(Math.random() * (height - 1));
-                }
-                SwapStacks(table, randomNumber1, randomNumber2);
-                break;
-            case 5:
-                break;
-        }
-    }
 }
 
 function canBeRemoved(uniqueArr,number)
@@ -194,150 +240,6 @@ function setNumbers(table)
             document.getElementById(i.toString()).disabled = true;
         }
     }
-}
-
-function RotateClockWise(table)
-{
-    var size = Math.sqrt(Math.sqrt(table.length));
-    var copy = table.slice();
-    for (let i = 0; i < Math.pow(size, 2); i++)
-    {
-        for (let k = 0; k < Math.pow(size, 2); k++)
-        {
-            table[i * Math.pow(size, 2) + k] = copy[(Math.pow(size, 2) - 1 - k) * Math.pow(size, 2) + i];
-        }
-    }
-    return table;
-}
-
-function RotateCounterClockWise(table)
-{
-    var size = Math.sqrt(Math.sqrt(table.length));
-    var copy = table.slice();
-    for(var i = 0; i < Math.pow(size,2); i++)
-    {
-        for(var k = 0; k < Math.pow(size, 2); k++)
-        {
-            table[i * Math.pow(size, 2) + k] = copy[(k + 1) * Math.pow(size, 2) - i - 1];
-        }
-    }
-    return table;
-}
-
-function FlipHorizontal(table)
-{
-    var size = Math.sqrt(Math.sqrt(table.length));
-    for (var i = 0; i < Math.pow(size,2); i++)
-    {
-        for(var k = 0; k < Math.floor(Math.pow(size, 2) / 2); k++)
-        {
-            var holder = table[i * Math.pow(size,2) + k];
-            table[i * Math.pow(size, 2) + k] = table[i * Math.pow(size, 2) + Math.pow(size, 2) - 1 - k];
-            table[i * Math.pow(size, 2) + Math.pow(size, 2) - 1 - k] = holder;
-        }
-    }
-    return table;
-}
-
-function FlipVertical(table)
-{
-    var size = Math.sqrt(Math.sqrt(table.length));
-    for (var h = 0; h < Math.pow(size,2); h++)
-    {
-        for(var v = 0; v < Math.floor(Math.pow(size, 2) / 2); v++)
-        {
-            var holder = table[v * Math.pow(size, 2) + h];
-            table[v * Math.pow(size, 2) + h] = table[(Math.pow(size, 2) - 1 - v) * Math.pow(size, 2) + h];
-            table[(Math.pow(size, 2) - 1 - v) * Math.pow(size, 2) + h] = holder;
-        }
-    }
-    return table;
-}
-
-function FlipDiagonal(table) //From NW to SE
-{
-    var size = Math.sqrt(Math.sqrt(table.length));
-    var copy = Array(table.length).fill(-1);
-    for (var r = 0; r < Math.pow(size,2); r++)
-    {
-        for (var c = 0; c < Math.pow(size, 2); c++)
-        {
-            copy[r * Math.pow(size, 2) + c] = table[c * Math.pow(size, 2) + r];
-        }
-    }
-    return copy;
-}
-
-function FlipDiagonal2(table) //From SW, NE
-{
-    var size = Math.sqrt(Math.sqrt(table.length));
-    var copy = table.slice();
-    for (var r = 0; r < Math.pow(size, 2); r++)
-    {
-        for (var c = 0; c < Math.pow(size, 2); c++)
-        {
-            copy[r * Math.pow(size, 2) + c] = table[(Math.pow(size,2) - 1 - c) * Math.pow(size,2) + Math.pow(size,2) - 1 - r];
-        }
-    }    
-    return copy;
-}
-
-function SwapNumbers(table, num1, num2)
-{
-    for(var i = 0; i < table.length; i++)
-    {
-        if (table[i] == num1)
-        {
-            table[i] = num2;
-        }
-        else if (table[i] == num2)
-        {
-            table[i] = num1;
-        }
-    }
-    return table;
-}
-
-function SwapRows(table, row1, row2)
-{
-    var size = Math.sqrt(table.length);
-    for(let i = 0; i < size; i++)
-    {
-        let holder = table[row1 * size + i];
-        table[row1 * size + i] = table[row2 * size + i];
-        table[row2 * size + i] = holder;
-    }
-    return table;
-}
-
-function SwapBands(table, band1, band2)
-{
-    for (var i = 0; i < height; i++)
-    {
-        table = SwapRows(table, band1 * height + i, band2 * height + i);
-    }
-    return table;
-}
-
-function SwapColumns(table, column1, column2)
-{
-    var size = Math.sqrt(table.length);
-    for(let i = 0; i < size; i++)
-    {
-        let holder = table[column1 + i * size];
-        table[column1 + i * size] = table[column2 + i * size];
-        table[column2 + i * size] = holder;
-    }
-    return table;
-}
-
-function SwapStacks(table, stack1, stack2)
-{
-    for(var i = 0; i < width; i++)
-    {
-        table = SwapColumns(table, stack1 * width + i, stack2 * width + i);
-    }
-    return table;
 }
 
 function CheckSudoku(table) //This function should only be called when all cells have a number
@@ -443,10 +345,20 @@ function generateNewBoard(disapperanceRate,difficultyName)
     //New board
     var width = document.getElementById("width").value;
     var height = document.getElementById("height").value;
-    if(width == '' || width < 2){
+    if(width == '')
+    {
+        width = 3;
+    }
+    if(width < 2)
+    {
         width = 2;
     }
-    if(height == '' || height < 2){
+    if(height == '')
+    {
+        height = 3;
+    }
+    if(height < 2)
+    {
         height = 2;
     }
     newDOMBoard(width,height);
